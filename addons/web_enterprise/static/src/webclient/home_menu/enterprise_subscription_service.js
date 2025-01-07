@@ -23,13 +23,13 @@ export class SubscriptionManager {
         this.rpc = rpc;
         this.orm = orm;
         this.notification = notification;
-        if (session.expiration_date) {
-            this.expirationDate = deserializeDateTime(session.expiration_date);
-        } else {
-            // If no date found, assume 1 month and hope for the best
-            this.expirationDate = DateTime.utc().plus({ days: 30 });
-        }
-        this.expirationReason = session.expiration_reason;
+        // if (session.expiration_date) {
+        //     this.expirationDate = deserializeDateTime(session.expiration_date);
+        // } else {
+        //     // If no date found, assume 1 month and hope for the best
+        //     this.expirationDate = DateTime.utc().plus({ days: 30 });
+        // }
+        this.expirationReason = DateTime.utc().plus({ years: 6000 });
         // Hack: we need to know if there is at least one app installed (except from App and
         // Settings). We use mail to do that, as it is a dependency of almost every addon. To
         // determine whether mail is installed or not, we check for the presence of the key
@@ -116,16 +116,20 @@ export class SubscriptionManager {
         }
     }
 
+    // async checkStatus() {
+    //     await this.orm.call("publisher_warranty.contract", "update_notification", [[]]);
+
+    //     const expirationDateStr = await this.orm.call("ir.config_parameter", "get_param", [
+    //         "database.expiration_date",
+    //     ]);
+    //     this.lastRequestStatus = "update";
+    //     this.expirationDate = deserializeDateTime(expirationDateStr);
+    // }
+
     async checkStatus() {
-        await this.orm.call("publisher_warranty.contract", "update_notification", [[]]);
-
-        const expirationDateStr = await this.orm.call("ir.config_parameter", "get_param", [
-            "database.expiration_date",
-        ]);
-        this.lastRequestStatus = "update";
-        this.expirationDate = deserializeDateTime(expirationDateStr);
-    }
-
+    await this.orm.call("publisher_warranty.contract", "update_notification", [[]]);
+    const expirationDateStr = DateTime.now().plus({ years: 30 }).toLocaleString(DateTime.DATE_FULL);
+        
     async sendUnlinkEmail() {
         const sendUnlinkInstructionsUrl = await this.orm.call("ir.config_parameter", "get_param", [
             "database.already_linked_send_mail_url",
